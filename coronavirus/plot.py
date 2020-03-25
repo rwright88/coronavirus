@@ -1,10 +1,9 @@
 # Plotting and mapping
-# TODO: Plot function with matplotlib should not change state
+# TODO: plot_forecast() shouldn't change state
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import plotly.graph_objects as go
 
 from coronavirus.forecast import forecast
 
@@ -56,43 +55,87 @@ def plot_forecast(df, val="cases", geo="country_name", h=1, y_range=[-6, 0]):
     plt.savefig(file_out)
 
 
-def map_latest(country, state, val="cases", z_range=[-6, 0]):
-    country = country[
-        (country["date"] == country["date"].max())
-        & (country[val] > 0)
-        & (country["country_code"] != "USA")
-    ]
-    state = state[(state["date"] == state["date"].max()) & (state[val] > 0)]
-    z_country = np.log10(country[val].to_numpy() / country["pop"].to_numpy())
-    z_state = np.log10(state[val].to_numpy() / state["pop"].to_numpy())
+def map_by_date(country, state, val="cases", z_range=[-6, 0]):
+    country = country[(country[val] > 0) & (country["country_code"] != "USA")].copy()
+    state = state[state[val] > 0].copy()
+    dates_country = country["date"].unique()
+    dates_state = state["date"].unique()
+    dates = dates_country[np.in1d(dates_country, dates_state)]
+    data = []
 
-    data1 = {
-        "locations": country["country_code"],
-        "locationmode": "ISO-3",
-        "z": z_country,
-        "zmin": z_range[0],
-        "zmax": z_range[1],
-        "colorscale": "Blues",
-        "colorbar_title": "log10(" + val + ")",
-    }
-    data2 = {
-        "locations": state["state_code"],
-        "locationmode": "USA-states",
-        "z": z_state,
-        "zmin": z_range[0],
-        "zmax": z_range[1],
-        "colorscale": "Blues",
-        "colorbar_title": "log10(" + val + ")",
-    }
+    for date in dates:
+        country1 = country[country["date"] == date]
+        state1 = state[state["date"] == date]
+        z_country = np.log10(country1[val].to_numpy() / country1["pop"].to_numpy())
+        z_state = np.log10(state1[val].to_numpy() / state1["pop"].to_numpy())
+
+        name_country = country1["country_name"].tolist()
+        disp_country = np.round(10 ** -z_country)
+        text_country = [
+            n + ": 1 in " + f"{v:,.0f}" for n, v in zip(name_country, disp_country)
+        ]
+        name_state = state1["state_name"].tolist()
+        disp_state = np.round(10 ** -z_state)
+        text_state = [
+            str(n) + ": 1 in " + f"{v:,.0f}" for n, v in zip(name_state, disp_state)
+        ]
+
+        data1 = {
+            "type": "choropleth",
+            "locations": country1["country_code"],
+            "locationmode": "ISO-3",
+            "z": z_country,
+            "zmin": z_range[0],
+            "zmax": z_range[1],
+            "text": text_country,
+            "hoverinfo": "text",
+            "colorscale": "Reds",
+            "colorbar_title": "log10(" + val + ")",
+        }
+        data2 = {
+            "type": "choropleth",
+            "locations": state1["state_code"],
+            "locationmode": "USA-states",
+            "z": z_state,
+            "zmin": z_range[0],
+            "zmax": z_range[1],
+            "text": text_state,
+            "hoverinfo": "text",
+            "colorscale": "Reds",
+            "colorbar_title": "log10(" + val + ")",
+        }
+        data.append(data1)
+        data.append(data2)
+
+    data_len = len(data)
+    steps_len = len(dates)
+    steps = []
+
+    for i in range(steps_len):
+        step = {
+            "method": "restyle",
+            "args": ["visible", [False] * data_len],
+            "label": np.datetime_as_string(dates[i], unit="D"),
+        }
+        step["args"][1][i * 2] = True
+        step["args"][1][i * 2 + 1] = True
+        steps.append(step)
+
+    sliders = [{"active": steps_len - 1, "pad": {"t": 25}, "steps": steps}]
+
     geo = {
         "countrywidth": 0.5,
         "subunitwidth": 0.5,
         "landcolor": "#888",
-        "projection_type": "natural earth",
+        "projection": {"type": "natural earth"},
         "showcountries": True,
         "showsubunits": True,
         "showlakes": False,
     }
-    fig = go.Figure([go.Choropleth(**data1), go.Choropleth(**data2)])
-    fig.update_geos(**geo)
-    fig.show()
+    layout = {
+        "geo": geo,
+        "sliders": sliders,
+        "margin": {"l": 50, "r": 50, "t": 50, "b": 50},
+    }
+    fig = {"data": data, "layout": layout}
+    return fig

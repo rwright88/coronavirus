@@ -6,14 +6,10 @@ Coronavirus data and analysis.
 
 - matplotlib
 - numpy
-- pandas
+- pandas + lxml
 - plotly
 - requests
 - statsmodels
-
-### Pandas io
-
-- lxml
 
 ### Development
 
