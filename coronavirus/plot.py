@@ -11,13 +11,18 @@ from coronavirus.forecast import forecast
 
 def plot_forecast(df, val="cases", geo="country_name", h=1, y_range=[-6, 0]):
     """Plot observed and forecasted val by geo"""
-    file_out = "out/coronavirus-" + val + "-" + geo + ".png"
+    file_out = "out/coronavirus-" + val + "-" + geo[:-5] + ".png"
     n_rows = 2
     n_cols = 5
     n_items = n_rows * n_cols
     top = df[df["date"] == df["date"].max()].sort_values(val, ascending=False)
     top = sorted(top.iloc[:n_items][geo].tolist())
-    val_min = 10
+
+    if val == "cases":
+        val_min = 100
+    else:
+        val_min = 10
+
     plt.close("all")
     fig, ax = plt.subplots(n_rows, n_cols, sharex="all", sharey="all", figsize=(12, 5))
 

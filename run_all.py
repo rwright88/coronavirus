@@ -2,7 +2,6 @@
 # Plots are currently saved in directory "out"
 # Maps are currently opened in a browser
 # TODO: Plot and map function shouldn't change state
-# TODO: Good judgement predictions
 
 import numpy as np
 import pandas as pd
