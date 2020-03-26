@@ -30,7 +30,7 @@ def get_pop_country():
 
 
 def get_pop_state():
-    """Get state populations from Census"""
+    """Get population by state from US Census"""
     file1 = "https://www2.census.gov/programs-surveys/popest/datasets/2010-2019/state/detail/SCPRC-EST2019-18+POP-RES.csv"
     df = pd.read_csv(file1)
     df = df[df["SUMLEV"] == 40]

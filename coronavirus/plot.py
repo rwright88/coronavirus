@@ -56,6 +56,7 @@ def plot_forecast(df, val="cases", geo="country_name", h=1, y_range=[-6, 0]):
 
 
 def map_by_date(country, state, val="cases", z_range=[-6, 0]):
+    """Return dict to make Plotly map of val per person by country and date"""
     country = country[(country[val] > 0) & (country["country_code"] != "USA")].copy()
     state = state[state[val] > 0].copy()
     dates_country = country["date"].unique()

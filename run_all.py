@@ -25,7 +25,7 @@ state = pd.merge(state, pop_state, how="left", on="state_code")
 
 rc = [-6, 0]
 rh = [-6, -2]
-rd = [-6, -2]
+rd = [-8, -2]
 h = 14
 
 cv.plot_forecast(country, val="cases", geo="country_name", h=h, y_range=rc)
@@ -36,6 +36,9 @@ cv.plot_forecast(state, val="hospitalized", geo="state_name", h=h, y_range=rh)
 cv.plot_forecast(state, val="deaths", geo="state_name", h=h, y_range=rd)
 
 # map -----
+
+rc = [-6, 0]
+rd = [-6, -2]
 
 offline.plot(
     cv.map_by_date(country, state, val="cases", z_range=rc),
