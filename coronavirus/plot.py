@@ -31,12 +31,12 @@ def plot_forecast(df, val="cases", geo="country_name", h=1, y_range=[-6, 0]):
         df1 = df[(df[geo] == item) & (df[val] >= val_min)]
         if df1.shape[0] < 3:
             continue
-        dates = [df1["date"].min(), df1["date"].max()]
-        dates_fc = [dates[1] + pd.Timedelta(days=1), dates[1] + pd.Timedelta(days=h)]
-        x_obs = pd.date_range(*dates).to_numpy()
-        x_pred = pd.date_range(*dates_fc).to_numpy()
+
         obs = df1[val].to_numpy()
         pred = forecast(obs, n=h, log=True, trend="add", damped=True)
+        obs_len = len(obs)
+        x_obs = np.arange(obs_len)
+        x_pred = np.arange(obs_len, obs_len + h)
 
         pop = df1["pop"].to_numpy()[0]
         obs = obs / pop
@@ -45,12 +45,11 @@ def plot_forecast(df, val="cases", geo="country_name", h=1, y_range=[-6, 0]):
         ax[row, col].plot(x_obs, obs, color="#1f77b4", label=item)
         ax[row, col].plot(x_pred, pred, color="#1f77b4", linestyle="--")
         ax[row, col].set_title(item)
-        ax[row, col].set_xlim(np.datetime64("2020-01-22"), dates_fc[1])
+        ax[row, col].set_xlim(-5, 105)
         ax[row, col].set_ylim(10 ** y_range[0], 10 ** y_range[1])
         ax[row, col].set_yscale("log")
         ax[row, col].grid()
 
-    fig.autofmt_xdate()
     plt.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.15)
     plt.savefig(file_out)
 
