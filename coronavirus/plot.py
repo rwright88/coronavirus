@@ -32,10 +32,9 @@ def plot_forecast(df, val="cases", geo="country_name", h=1, y_range=[-6, 0]):
         if df1.shape[0] < 3:
             continue
         dates = [df1["date"].min(), df1["date"].max()]
-        x_obs = pd.date_range(dates[0], dates[1]).to_numpy()
-        x_pred = pd.date_range(
-            dates[1] + pd.Timedelta(days=1), dates[1] + pd.Timedelta(days=h)
-        ).to_numpy()
+        dates_fc = [dates[1] + pd.Timedelta(days=1), dates[1] + pd.Timedelta(days=h)]
+        x_obs = pd.date_range(*dates).to_numpy()
+        x_pred = pd.date_range(*dates_fc).to_numpy()
         obs = df1[val].to_numpy()
         pred = forecast(obs, n=h, log=True, trend="add", damped=True)
 
@@ -46,6 +45,7 @@ def plot_forecast(df, val="cases", geo="country_name", h=1, y_range=[-6, 0]):
         ax[row, col].plot(x_obs, obs, color="#1f77b4", label=item)
         ax[row, col].plot(x_pred, pred, color="#1f77b4", linestyle="--")
         ax[row, col].set_title(item)
+        ax[row, col].set_xlim(np.datetime64("2020-01-22"), dates_fc[1])
         ax[row, col].set_ylim(10 ** y_range[0], 10 ** y_range[1])
         ax[row, col].set_yscale("log")
         ax[row, col].grid()
