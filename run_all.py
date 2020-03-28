@@ -26,7 +26,7 @@ state = pd.merge(state, pop_state, how="left", on="state_code")
 rc = [-6, 0]
 rh = [-6, -2]
 rd = [-8, -2]
-h = 14
+h = 30
 
 cv.plot_forecast(country, val="cases", geo="country_name", h=h, y_range=rc)
 cv.plot_forecast(country, val="deaths", geo="country_name", h=h, y_range=rd)

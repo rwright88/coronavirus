@@ -45,8 +45,9 @@ def plot_forecast(df, val="cases", geo="country_name", h=1, y_range=[-6, 0]):
         ax[row, col].plot(x_obs, obs, color="#1f77b4", label=item)
         ax[row, col].plot(x_pred, pred, color="#1f77b4", linestyle="--")
         ax[row, col].set_title(item)
-        ax[row, col].set_xlim(-5, 105)
+        ax[row, col].set_xlim(-5, 95)
         ax[row, col].set_ylim(10 ** y_range[0], 10 ** y_range[1])
+        ax[row, col].set_xticks([0, 30, 60, 90])
         ax[row, col].set_yscale("log")
         ax[row, col].grid()
 
