@@ -7,6 +7,8 @@ def forecast(y, n, log=False, trend="add", damped=False):
     """Prediction of exponential smoothing forecast"""
     y = np.array(y)
     size = len(y)
+    if size < 2:
+        return np.full(n, np.nan, float)
     start = size
     end = size + n - 1
     if log == False:

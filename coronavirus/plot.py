@@ -1,5 +1,4 @@
 # Plotting and mapping
-# TODO: plot_forecast() shouldn't change state
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -8,51 +7,50 @@ import pandas as pd
 from coronavirus.forecast import forecast
 
 
-def plot_forecast(df, val="cases", geo="country_name", h=1, y_range=[-6, 0]):
-    """Plot observed and forecasted val by geo"""
-    file_out = "out/coronavirus-" + val + "-" + geo[:-5] + ".png"
-    n_rows = 2
+def plot_forecast(df, geo="country_name", vals=["cases"], h=1, y_range=[-8, 0]):
+    """Plot observed and forecasted by geo and val"""
+    n_rows = 3
     n_cols = 5
-    n_items = n_rows * n_cols
-    top = df[df["date"] == df["date"].max()].sort_values(val, ascending=False)
-    top = sorted(top.iloc[:n_items][geo].tolist())
+    val_min_cases = 100
+    n_plots = n_rows * n_cols
+    top = df[df["date"] == df["date"].max()].sort_values("cases", ascending=False)
+    top = sorted(top.iloc[:n_plots][geo].tolist())
+    colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
+    fig, ax = plt.subplots(n_rows, n_cols, sharex="all", sharey="all", figsize=(14, 7))
 
-    if val == "cases":
-        val_min = 100
-    else:
-        val_min = 10
+    for i, plot in enumerate(top):
+        row = np.floor(i / n_cols).astype(int)
+        col = i - row * n_cols
+        df1 = df[(df[geo] == plot) & (df["cases"] >= val_min_cases)]
 
-    plt.close("all")
-    fig, ax = plt.subplots(n_rows, n_cols, sharex="all", sharey="all", figsize=(12, 5))
+        for j, val in enumerate(vals):
+            if val == "cases":
+                val_min = val_min_cases
+            else:
+                val_min = 10
+            obs = df1[val].to_numpy().astype(float)
+            obs[obs < val_min] = np.nan
+            pred = forecast(obs[~np.isnan(obs)], h, log=True, trend="add", damped=True)
+            obs_len = len(obs)
+            x_obs = np.arange(obs_len)
+            x_pred = np.arange(obs_len, obs_len + h)
+            pop = df1["pop"].to_numpy()[0]
+            obs = obs / pop
+            pred = pred / pop
+            color = colors[j]
+            ax[row, col].plot(x_obs, obs, color=color, label=val)
+            ax[row, col].plot(x_pred, pred, color=color, linestyle="--")
 
-    for count, item in enumerate(top):
-        row = np.floor(count / n_cols).astype(int)
-        col = count - row * n_cols
-        df1 = df[(df[geo] == item) & (df[val] >= val_min)]
-        if df1.shape[0] < 3:
-            continue
-
-        obs = df1[val].to_numpy()
-        pred = forecast(obs, n=h, log=True, trend="add", damped=True)
-        obs_len = len(obs)
-        x_obs = np.arange(obs_len)
-        x_pred = np.arange(obs_len, obs_len + h)
-
-        pop = df1["pop"].to_numpy()[0]
-        obs = obs / pop
-        pred = pred / pop
-
-        ax[row, col].plot(x_obs, obs, color="#1f77b4", label=item)
-        ax[row, col].plot(x_pred, pred, color="#1f77b4", linestyle="--")
-        ax[row, col].set_title(item)
+        ax[row, col].grid()
+        ax[row, col].set_title(plot)
         ax[row, col].set_xlim(-5, 95)
         ax[row, col].set_ylim(10 ** y_range[0], 10 ** y_range[1])
         ax[row, col].set_xticks([0, 30, 60, 90])
         ax[row, col].set_yscale("log")
-        ax[row, col].grid()
 
-    plt.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.15)
-    plt.savefig(file_out)
+    handles, labels = ax[n_rows - 1, n_cols - 1].get_legend_handles_labels()
+    fig.legend(handles, labels, loc="upper right")
+    return fig
 
 
 def map_by_date(country, state, val="cases", z_range=[-6, 0]):

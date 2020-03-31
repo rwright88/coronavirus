@@ -1,12 +1,16 @@
 # Get data, forecast, and plot
-# Plots are currently saved in directory "out"
-# Maps are currently opened in a browser
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from plotly import offline
 
 import coronavirus as cv
+
+file_plot_country = "out/coronavirus-trend-country.png"
+file_plot_state = "out/coronavirus-trend-state.png"
+file_map_cases = "out/coronavirus-map-cases.html"
+file_map_deaths = "out/coronavirus-map-deaths.html"
 
 np.seterr(all="ignore")
 
@@ -23,28 +27,25 @@ state = pd.merge(state, pop_state, how="left", on="state_code")
 
 # forecast and plot -----
 
-rc = [-6, 0]
-rh = [-6, -2]
-rd = [-8, -2]
 h = 30
+y_range = [-8, 0]
 
-cv.plot_forecast(country, val="cases", geo="country_name", h=h, y_range=rc)
-cv.plot_forecast(country, val="deaths", geo="country_name", h=h, y_range=rd)
+plt.close("all")
+geo = "country_name"
+vals = ["cases", "deaths"]
+fig = cv.plot_forecast(country, geo=geo, vals=vals, h=h, y_range=y_range)
+plt.savefig(file_plot_country)
 
-cv.plot_forecast(state, val="cases", geo="state_name", h=h, y_range=rc)
-cv.plot_forecast(state, val="hospitalized", geo="state_name", h=h, y_range=rh)
-cv.plot_forecast(state, val="deaths", geo="state_name", h=h, y_range=rd)
+plt.close("all")
+geo = "state_name"
+vals = ["cases", "deaths", "hospitalized"]
+fig = cv.plot_forecast(state, geo=geo, vals=vals, h=h, y_range=y_range)
+plt.savefig(file_plot_state)
 
 # map -----
 
-rc = [-6, 0]
-rd = [-6, -2]
+data = cv.map_by_date(country, state, val="cases", z_range=[-6, 0])
+offline.plot(data, filename=file_map_cases)
 
-offline.plot(
-    cv.map_by_date(country, state, val="cases", z_range=rc),
-    filename="out/coronavirus-map-cases.html",
-)
-offline.plot(
-    cv.map_by_date(country, state, val="deaths", z_range=rd),
-    filename="out/coronavirus-map-deaths.html",
-)
+data = cv.map_by_date(country, state, val="deaths", z_range=[-6, -2])
+offline.plot(data, filename=file_map_deaths)
