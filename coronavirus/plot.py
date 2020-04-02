@@ -65,18 +65,19 @@ def map_by_date(country, state, val="cases", z_range=[-6, 0]):
     for date in dates:
         country1 = country[country["date"] == date]
         state1 = state[state["date"] == date]
-        z_country = np.log10(country1[val].to_numpy() / country1["pop"].to_numpy())
-        z_state = np.log10(state1[val].to_numpy() / state1["pop"].to_numpy())
-
+        rate_country = country1[val].to_numpy() / country1["pop"].to_numpy()
+        rate_state = state1[val].to_numpy() / state1["pop"].to_numpy()
+        z_country = np.log10(rate_country)
+        z_state = np.log10(rate_state)
         name_country = country1["country_name"].tolist()
-        disp_country = np.round(10 ** -z_country)
-        text_country = [
-            n + ": 1 in " + f"{v:,.0f}" for n, v in zip(name_country, disp_country)
-        ]
         name_state = state1["state_name"].tolist()
-        disp_state = np.round(10 ** -z_state)
+        disp_country = np.round(rate_country * 10 ** 6, 1)
+        disp_state = np.round(rate_state * 10 ** 6, 1)
+        text_country = [
+            f"{n}: {v:,.1f} per million" for n, v in zip(name_country, disp_country)
+        ]
         text_state = [
-            str(n) + ": 1 in " + f"{v:,.0f}" for n, v in zip(name_state, disp_state)
+            f"{n}: {v:,.1f} per million" for n, v in zip(name_state, disp_state)
         ]
 
         data1 = {
