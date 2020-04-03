@@ -7,23 +7,25 @@ import requests
 
 def get_pop_country():
     """Get population by country from worldometers"""
-    url = "https://www.worldometers.info/world-population/population-by-country/"
+    url_pop = "https://www.worldometers.info/world-population/population-by-country/"
+    url_cw = "https://www.worldometers.info/country-codes/"
     header = {
         "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.75 Safari/537.36",
         "X-Requested-With": "XMLHttpRequest",
     }
-    r = requests.get(url, headers=header)
 
+    r = requests.get(url_pop, headers=header)
     df = pd.read_html(r.text)[0]
     df = df.iloc[:, [1, 2]]
     df.columns = ["country_name", "pop"]
     df["country_name"] = [x.lower() for x in df["country_name"].tolist()]
 
-    file_cw = "https://raw.githubusercontent.com/datasets/country-codes/master/data/country-codes.csv"
-    cw = pd.read_csv(file_cw)
-    cw = cw[["ISO3166-1-Alpha-3", "CLDR display name"]]
+    r = requests.get(url_cw, headers=header)
+    cw = pd.read_html(r.text)[0]
+    cw = cw.iloc[:, [3, 0]]
     cw.columns = ["country_code", "country_name"]
-    cw["country_name"] = fix_country_name(cw["country_name"])
+    cw["country_name"] = [x.lower() for x in cw["country_name"].tolist()]
+
     df = pd.merge(df, cw, how="left", on="country_name")
     df = df[["country_code", "country_name", "pop"]]
     return df
@@ -46,6 +48,11 @@ def get_pop_state():
 def fix_country_name(x):
     """Fix country name to be consistent with worldometers"""
     x = pd.Series([str(e).lower() for e in x])
+    x[x.str.contains("brazzaville")] = "congo"
+    x[x == "cote d'ivoire"] = "côte d'ivoire"
+    x[x.str.contains("czechia")] = "czech republic (czechia)"
+    x[x.str.contains("kinshasa")] = "dr congo"
+    x[x == "burma"] = "myanmar"
     x[x == "korea, south"] = "south korea"
     x[x.str.contains("taiwan")] = "taiwan"
     x[(x == "uk") | x.str.contains("united kingdom")] = "united kingdom"

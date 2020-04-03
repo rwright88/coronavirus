@@ -117,7 +117,9 @@ def plot_quantiles(df, p_pred):
         x_text = ax.lines[i].get_xdata()[-1]
         y_text = ax.lines[i].get_ydata()[-1]
         color = ax.lines[i].get_color()
-        ax.annotate(f"{np.round(y_text, 6):.6f}", xy=(x_text, y_text), color=color)
+        ax.annotate(
+            f"{np.round(y_text, 6):.6f}", xy=(x_text, y_text), color=color, size=10
+        )
 
     ax.grid()
     ax.legend()
