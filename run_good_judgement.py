@@ -1,6 +1,7 @@
 # Coronavirus predictions from Good Judgement
 # Source: https://goodjudgment.io/covid/dashboard/
 # See also: https://pandemic.metaculus.com/questions/
+# TODO: No updates since 2020-04-01
 
 import matplotlib.pyplot as plt
 import numpy as np

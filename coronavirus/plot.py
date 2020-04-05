@@ -13,8 +13,9 @@ def plot_forecast(df, geo="country_name", vals=["cases"], h=1, y_range=[-8, 0]):
     n_cols = 5
     val_min_cases = 100
     n_plots = n_rows * n_cols
-    top = df[df["date"] == df["date"].max()].sort_values("cases", ascending=False)
-    top = sorted(top.iloc[:n_plots][geo].tolist())
+    top = df[df["date"] == df["date"].max()]
+    top = top[top["cases"].rank(method="first", ascending=False) <= n_plots]
+    top = sorted(top[geo].tolist())
     colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
     fig, ax = plt.subplots(n_rows, n_cols, sharex="all", sharey="all", figsize=(14, 7))
 
