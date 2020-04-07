@@ -1,7 +1,6 @@
 # Coronavirus predictions from Good Judgement
 # Source: https://goodjudgment.io/covid/dashboard/
 # See also: https://pandemic.metaculus.com/questions/
-# TODO: No updates since 2020-04-01
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -15,6 +14,7 @@ file_us_deaths = "out/coronavirus-predict-us-deaths.png"
 
 def get_data_manual():
     """Get Coronavirus prediction data from Good Judgement"""
+    # TODO: No changes from 2020-04-01 to 2020-04-06
     gl_cases_const = 5.3 * 10 ** np.arange(6, 10)
     gl_deaths_const = 8.0 * 10 ** np.arange(4, 8)
     us_cases_const = 2.3 * 10 ** np.arange(5, 9)
@@ -34,8 +34,7 @@ def get_data_manual():
         ["2020-03-30", [0.01, 0.13, 0.53, 0.31], gl_cases_const],
         ["2020-03-31", [0.01, 0.11, 0.53, 0.33], gl_cases_const],
         ["2020-04-01", [0.01, 0.12, 0.54, 0.31], gl_cases_const],
-        ["2020-04-02", [0.01, 0.12, 0.54, 0.31], gl_cases_const],
-        ["2020-04-03", [0.01, 0.12, 0.54, 0.31], gl_cases_const],
+        ["2020-04-07", [0.01, 0.10, 0.56, 0.31], gl_cases_const],
     ]
     gl_deaths = [
         ["2020-03-20", [0.04, 0.33, 0.50, 0.12], gl_deaths_const],
@@ -51,8 +50,7 @@ def get_data_manual():
         ["2020-03-30", [0.01, 0.11, 0.54, 0.32], gl_deaths_const],
         ["2020-03-31", [0.01, 0.14, 0.59, 0.24], gl_deaths_const],
         ["2020-04-01", [0.01, 0.16, 0.60, 0.21], gl_deaths_const],
-        ["2020-04-02", [0.01, 0.16, 0.60, 0.21], gl_deaths_const],
-        ["2020-04-03", [0.01, 0.16, 0.60, 0.21], gl_deaths_const],
+        ["2020-04-07", [0.01, 0.14, 0.65, 0.18], gl_deaths_const],
     ]
     us_cases = [
         ["2020-03-20", [0.04, 0.26, 0.41, 0.27], us_cases_const],
@@ -68,8 +66,7 @@ def get_data_manual():
         ["2020-03-30", [0.01, 0.11, 0.54, 0.32], us_cases_const],
         ["2020-03-31", [0.01, 0.14, 0.59, 0.24], us_cases_const],
         ["2020-04-01", [0.01, 0.09, 0.58, 0.30], us_cases_const],
-        ["2020-04-02", [0.01, 0.09, 0.58, 0.30], us_cases_const],
-        ["2020-04-03", [0.01, 0.09, 0.58, 0.30], us_cases_const],
+        ["2020-04-07", [0.01, 0.03, 0.59, 0.35], us_cases_const],
     ]
     us_deaths = [
         ["2020-03-20", [0.03, 0.27, 0.53, 0.16], us_deaths_const],
@@ -85,8 +82,7 @@ def get_data_manual():
         ["2020-03-30", [0.01, 0.10, 0.64, 0.23], us_deaths_const],
         ["2020-03-31", [0.01, 0.11, 0.56, 0.30], us_deaths_const],
         ["2020-04-01", [0.01, 0.05, 0.69, 0.24], us_deaths_const],
-        ["2020-04-02", [0.01, 0.05, 0.69, 0.24], us_deaths_const],
-        ["2020-04-03", [0.01, 0.05, 0.69, 0.24], us_deaths_const],
+        ["2020-04-07", [0.01, 0.02, 0.67, 0.29], us_deaths_const],
     ]
     return [gl_cases, gl_deaths, us_cases, us_deaths]
 
