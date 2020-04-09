@@ -3,6 +3,7 @@
 import numpy as np
 from statsmodels.tsa.holtwinters import ExponentialSmoothing
 
+
 def forecast(y, n, log=False, trend="add", damped=False):
     """Prediction of exponential smoothing forecast"""
     y = np.array(y)

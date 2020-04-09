@@ -1,11 +1,11 @@
-# Table of average daily change in last n days
+# Average daily change in last n days
 
 import numpy as np
 import pandas as pd
 
 
-def table_change(country, state, n=7):
-    """Table of average daily change in last n days"""
+def calc_changes(country, state, n=7):
+    """Calculate average daily change in last n days"""
     country = country.copy()
     state = state.copy()
     country.columns = [x if x != "country_name" else "geo" for x in country.columns]
