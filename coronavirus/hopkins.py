@@ -35,5 +35,5 @@ def get_hopkins():
     agg = {"cases": "sum", "deaths": "sum"}
     df = df.groupby(["date", "country_name"]).agg(agg).reset_index()
     df = df[["date", "country_name", "cases", "deaths"]]
-    df = fill_dates(df)
+    df = fill_dates(df, geo="country_name")
     return df

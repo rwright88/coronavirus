@@ -18,5 +18,5 @@ def get_tracking():
     df = df[["date", "state", "positive", "hospitalized", "death"]]
     df.columns = ["date", "state_code", "cases", "hospitalized", "deaths"]
     df["date"] = pd.to_datetime(df["date"].astype(str))
-    df = fill_dates(df)
+    df = fill_dates(df, geo="state_code")
     return df

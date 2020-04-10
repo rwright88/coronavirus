@@ -1,15 +1,18 @@
 # Utilities
 
+from itertools import product
+
 import numpy as np
 import pandas as pd
 
 
-def fill_dates(df, fill_0=False):
-    """Fill missing dates in data frame, and sort dates"""
-    dates = df["date"]
-    dates = pd.date_range(dates.min(), dates.max())
-    template = pd.DataFrame(dates, columns=["date"])
-    df = pd.merge(template, df, how="left", on="date")
-    if fill_0 == True:
-        df = df.fillna(0)
+def fill_dates(df, geo):
+    """Fill missing dates in data frame for each geo"""
+    by = [geo, "date"]
+    geos = df[geo].unique()
+    dates = pd.date_range(df["date"].min(), df["date"].max(), freq="D")
+    template = list(product(geos, dates))
+    template = pd.DataFrame(template, columns=by)
+    df = pd.merge(template, df, how="left", on=by)
+    df = df.sort_values(by)
     return df

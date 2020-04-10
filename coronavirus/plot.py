@@ -60,7 +60,7 @@ def map_by_date(country, state, val="cases", z_range=[-6, 0]):
     state = state[state[val] > 0].copy()
     dates_country = country["date"].unique()
     dates_state = state["date"].unique()
-    dates = dates_country[np.in1d(dates_country, dates_state)]
+    dates = np.sort(dates_country[np.in1d(dates_country, dates_state)])
     data = []
 
     for date in dates:
