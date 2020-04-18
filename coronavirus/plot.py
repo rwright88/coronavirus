@@ -55,7 +55,7 @@ def plot_forecast(df, geo="country_name", vals=["cases"], h=1, y_range=[-8, 0]):
 
 
 def map_by_date(country, state, val="cases", z_range=[-6, 0]):
-    """Return dict to make Plotly map of val per person by country and date"""
+    """Return dict to make Plotly map of val per person by country/state and date"""
     country = country[(country[val] > 0) & (country["country_code"] != "USA")].copy()
     state = state[state[val] > 0].copy()
     dates_country = country["date"].unique()
@@ -104,6 +104,97 @@ def map_by_date(country, state, val="cases", z_range=[-6, 0]):
             "hoverinfo": "text",
             "colorscale": "Reds",
             "colorbar_title": "log10(" + val + ")",
+        }
+        data.append(data1)
+        data.append(data2)
+
+    data_len = len(data)
+    steps_len = len(dates)
+    steps = []
+
+    for i in range(steps_len):
+        step = {
+            "method": "restyle",
+            "args": ["visible", [False] * data_len],
+            "label": np.datetime_as_string(dates[i], unit="D"),
+        }
+        step["args"][1][i * 2] = True
+        step["args"][1][i * 2 + 1] = True
+        steps.append(step)
+
+    sliders = [{"active": steps_len - 1, "pad": {"t": 25}, "steps": steps}]
+
+    geo = {
+        "countrywidth": 0.5,
+        "subunitwidth": 0.5,
+        "landcolor": "#888",
+        "projection": {"type": "natural earth"},
+        "showcountries": True,
+        "showsubunits": True,
+        "showlakes": False,
+    }
+    layout = {
+        "geo": geo,
+        "sliders": sliders,
+        "margin": {"l": 50, "r": 50, "t": 50, "b": 50},
+    }
+    fig = {"data": data, "layout": layout}
+    return fig
+
+
+def map_by_date_changes(df, val="cases_chg", z_range=[0, 30]):
+    """Return dict to make Plotly map of average daily changes of val by country/state and date"""
+    df = df.copy()
+    df[val] = df[val] * 100
+    ind_states = df["code"].str.len() == 2
+    country = df[~ind_states & (df["code"] != "USA")].copy()
+    state = df[ind_states].copy()
+    dates_country = country["date"].unique()
+    dates_state = state["date"].unique()
+    dates = np.sort(dates_country[np.in1d(dates_country, dates_state)])
+    dates = dates[7:]  # TODO: Temporary
+    data = []
+
+    for date in dates:
+        country1 = country[country["date"] == date]
+        state1 = state[state["date"] == date]
+
+        z_country = country1[val].to_numpy()
+        z_state = state1[val].to_numpy()
+        name_country = country1["geo"].tolist()
+        name_state = state1["geo"].tolist()
+        disp_country = np.round(z_country, 1)
+        disp_state = np.round(z_state, 1)
+        text_country = [
+            f"{n}: {v:,.1f}% daily change" for n, v in zip(name_country, disp_country)
+        ]
+        text_state = [
+            f"{n}: {v:,.1f}% daily change" for n, v in zip(name_state, disp_state)
+        ]
+
+        data1 = {
+            "type": "choropleth",
+            "locations": country1["code"],
+            "locationmode": "ISO-3",
+            "z": z_country,
+            "zmin": z_range[0],
+            "zmax": z_range[1],
+            "text": text_country,
+            "hoverinfo": "text",
+            "colorscale": "Reds",
+            "colorbar_title": "Percent",
+        }
+        data2 = {
+            "type": "choropleth",
+            "locations": state1["code"],
+            "locationmode": "USA-states",
+            "z": z_state,
+            "zmin": z_range[0],
+            "zmax": z_range[1],
+            "text": text_state,
+            "hoverinfo": "text",
+            "colorscale": "Reds",
+            "colorbar_title": "Percent",
         }
         data.append(data1)
         data.append(data2)

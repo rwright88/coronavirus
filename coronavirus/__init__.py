@@ -1,6 +1,7 @@
 from coronavirus.changes import calc_changes
 from coronavirus.hopkins import get_hopkins
 from coronavirus.plot import map_by_date
+from coronavirus.plot import map_by_date_changes
 from coronavirus.plot import plot_forecast
 from coronavirus.population import get_pop_country
 from coronavirus.population import get_pop_state
