@@ -5,17 +5,20 @@ import numpy as np
 import pandas as pd
 
 from coronavirus.forecast import forecast
+from coronavirus.utils import ffill
 
 
 def plot_forecast(df, geo="country_name", vals=["cases"], h=1, y_range=[-8, 0]):
     """Plot observed and forecasted by geo and val"""
     n_rows = 3
     n_cols = 5
-    val_min_cases = 100
     n_plots = n_rows * n_cols
+    val_min_cases = 100
+
     top = df[df["date"] == df["date"].max()]
     top = top[top["cases"].rank(method="first", ascending=False) <= n_plots]
     top = sorted(top[geo].tolist())
+
     colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
     fig, ax = plt.subplots(n_rows, n_cols, sharex="all", sharey="all", figsize=(14, 7))
 
@@ -29,25 +32,32 @@ def plot_forecast(df, geo="country_name", vals=["cases"], h=1, y_range=[-8, 0]):
                 val_min = val_min_cases
             else:
                 val_min = 10
+
             obs = df1[val].to_numpy().astype(float)
             obs[obs < val_min] = np.nan
-            pred = forecast(obs[~np.isnan(obs)], h, log=True, trend="add", damped=True)
+            obs_filled = ffill(obs)
+            obs_filled = obs_filled[~np.isnan(obs_filled)]
+            pred = forecast(obs_filled, h, log=False, trend="mul", damped=True)
+
             obs_len = len(obs)
             x_obs = np.arange(obs_len)
             x_pred = np.arange(obs_len, obs_len + h)
+
             pop = df1["pop"].to_numpy()[0]
             obs = obs / pop
             pred = pred / pop
+
             color = colors[j]
             ax[row, col].plot(x_obs, obs, color=color, label=val)
             ax[row, col].plot(x_pred, pred, color=color, linestyle="--")
 
         ax[row, col].grid()
         ax[row, col].set_title(plot)
+        ax[row, col].set_yscale("log")
         ax[row, col].set_xlim(-5, 95)
         ax[row, col].set_ylim(10 ** y_range[0], 10 ** y_range[1])
         ax[row, col].set_xticks([0, 30, 60, 90])
-        ax[row, col].set_yscale("log")
+        ax[row, col].set_yticks(10.0 ** np.arange(-6, 1))
 
     handles, labels = ax[n_rows - 1, n_cols - 1].get_legend_handles_labels()
     fig.legend(handles, labels, loc="upper right")

@@ -37,7 +37,7 @@ changes[ind].to_csv(file_changes, index=False)
 # Forecast and plot -----
 
 h = 30
-y_range = [-8, 0]
+y_range = [-6, -1]
 
 plt.close("all")
 geo = "country_name"
@@ -47,7 +47,7 @@ plt.savefig(file_plot_country)
 
 plt.close("all")
 geo = "state_name"
-vals = ["cases", "deaths", "hospitalized"]
+vals = ["cases", "deaths"]
 fig = cv.plot_forecast(state, geo=geo, vals=vals, h=h, y_range=y_range)
 plt.savefig(file_plot_state)
 
