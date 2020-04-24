@@ -1,66 +1,68 @@
-# Get data, forecast, and plot
+# Coronavirus data analysis
 
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from plotly import offline
 
 import coronavirus as cv
+from coronavirus.utils import profile, summary
 
-file_changes = "out/coronavirus-table-changes.csv"
-file_plot_country = "out/coronavirus-trend-country.png"
-file_plot_state = "out/coronavirus-trend-state.png"
+np.seterr(all="ignore")
+
+h = 30
+n = 7
+
+file_stats = "out/coronavirus-stats.csv"
+file_stats_now = "out/coronavirus-stats-now.csv"
+
+file_plot_cases = "out/coronavirus-plot-cases.html"
+file_plot_deaths = "out/coronavirus-plot-deaths.html"
+file_plot_cases_changes = "out/coronavirus-plot-cases-changes.html"
+file_plot_deaths_changes = "out/coronavirus-plot-deaths-changes.html"
+
 file_map_cases = "out/coronavirus-map-cases.html"
 file_map_deaths = "out/coronavirus-map-deaths.html"
 file_map_cases_changes = "out/coronavirus-map-cases-changes.html"
 file_map_deaths_changes = "out/coronavirus-map-deaths-changes.html"
 
-np.seterr(all="ignore")
+# Data and stats -----
 
-# Data -----
+df = cv.get_data()
+df = cv.forecast_all(df, h=h)
+df = cv.calc_stats(df, n=n)
 
-pop_country = cv.get_pop_country()
-pop_state = cv.get_pop_state()
+df.to_csv(file_stats, index=False)
 
-country = cv.get_hopkins()
-country = pd.merge(country, pop_country, how="left", on="country_name")
+obs = df[df["type"] == "observed"]
+now = obs[(obs["date"] == obs["date"].max()) & (obs["pop"] >= 1e06)]
+now.to_csv(file_stats_now, index=False)
 
-state = cv.get_tracking()
-state = pd.merge(state, pop_state, how="left", on="state_code")
+# Plot -----
 
-# Average daily change -----
+obs_plot = obs[obs["pop"] >= 5e6]
 
-changes = cv.calc_changes(country, state, n=7)
-ind = (changes["date"] == changes["date"].max()) & (changes["pop"] >= 10 ** 6)
-changes[ind].to_csv(file_changes, index=False)
+data = cv.plot_trend(obs_plot, val="cases_pm")
+offline.plot(data, filename=file_plot_cases, auto_open=False)
 
-# Forecast and plot -----
+data = cv.plot_trend(obs_plot, val="deaths_pm")
+offline.plot(data, filename=file_plot_deaths, auto_open=False)
 
-h = 30
-y_range = [-6, -1]
+data = cv.plot_trend(obs_plot, val="cases_pc")
+offline.plot(data, filename=file_plot_cases_changes, auto_open=False)
 
-plt.close("all")
-geo = "country_name"
-vals = ["cases", "deaths"]
-fig = cv.plot_forecast(country, geo=geo, vals=vals, h=h, y_range=y_range)
-plt.savefig(file_plot_country)
-
-plt.close("all")
-geo = "state_name"
-vals = ["cases", "deaths"]
-fig = cv.plot_forecast(state, geo=geo, vals=vals, h=h, y_range=y_range)
-plt.savefig(file_plot_state)
+data = cv.plot_trend(obs_plot, val="deaths_pc")
+offline.plot(data, filename=file_plot_deaths_changes, auto_open=False)
 
 # Map -----
 
-data = cv.map_by_date(country, state, val="cases", z_range=[-6, 0])
-offline.plot(data, filename=file_map_cases)
+data = cv.map_by_date(obs, val="cases_pm")
+offline.plot(data, filename=file_map_cases, auto_open=False)
 
-data = cv.map_by_date(country, state, val="deaths", z_range=[-6, -2])
-offline.plot(data, filename=file_map_deaths)
+data = cv.map_by_date(obs, val="deaths_pm")
+offline.plot(data, filename=file_map_deaths, auto_open=False)
 
-data = cv.map_by_date_changes(changes, val="cases_chg", z_range=[0, 30])
-offline.plot(data, filename=file_map_cases_changes)
+data = cv.map_by_date(obs, val="cases_pc")
+offline.plot(data, filename=file_map_cases_changes, auto_open=False)
 
-data = cv.map_by_date_changes(changes, val="deaths_chg", z_range=[0, 30])
-offline.plot(data, filename=file_map_deaths_changes)
+data = cv.map_by_date(obs, val="deaths_pc")
+offline.plot(data, filename=file_map_deaths_changes, auto_open=False)
