@@ -84,6 +84,8 @@ def plot_trend(df, val="cases_pm"):
 def map_by_date(df, val="cases_pm"):
     """Map by country/state and date"""
     params = _get_params_map(val)
+    colorbar_ticktext = params["colorbar_ticktext"]
+    colorbar_tickvals = params["colorbar_tickvals"]
     text_per = params["text_per"]
     title = params["title"]
     z_range = params["z_range"]
@@ -129,8 +131,13 @@ def map_by_date(df, val="cases_pm"):
             "zmax": z_range[1],
             "text": text_country,
             "hoverinfo": "text",
-            "colorscale": "Reds",
-            "colorbar_title": "TODO",
+            "colorscale": "Blues",
+            "colorbar": {
+                "len": 0.5,
+                "ticktext": colorbar_ticktext,
+                "tickvals": colorbar_tickvals,
+                "title": text_per.capitalize(),
+            },
         }
         data2 = {
             "type": "choropleth",
@@ -141,8 +148,8 @@ def map_by_date(df, val="cases_pm"):
             "zmax": z_range[1],
             "text": text_state,
             "hoverinfo": "text",
-            "colorscale": "Reds",
-            "colorbar_title": "TODO",
+            "colorscale": "Blues",
+            "showscale": False,
         }
         data.append(data1)
         data.append(data2)
@@ -164,13 +171,11 @@ def map_by_date(df, val="cases_pm"):
     sliders = [{"active": steps_len - 1, "pad": {"t": 25}, "steps": steps}]
 
     geo = {
-        "countrywidth": 0.5,
-        "subunitwidth": 0.5,
-        "landcolor": "#888",
-        "projection": {"type": "natural earth"},
         "showcountries": True,
         "showsubunits": True,
         "showlakes": False,
+        "landcolor": "#808080",
+        "projection": {"type": "natural earth"},
     }
     layout = {
         "title": title,
@@ -185,35 +190,35 @@ def map_by_date(df, val="cases_pm"):
 def _get_params_plot(val):
     if val == "cases_pm":
         text_per = "per million"
-        val_min = 10
         title = "Cases per million people, by country and US state"
+        val_min = 10
         y_type = "log"
         y_tickvals = 10 ** np.arange(7)
     elif val == "deaths_pm":
         text_per = "per million"
-        val_min = 1
         title = "Deaths per million people, by country and US state"
+        val_min = 1
         y_type = "log"
         y_tickvals = 10 ** np.arange(7)
     elif val == "cases_pc":
         text_per = "percent change"
-        val_min = 10
         title = "Average daily percent change of cases in last 7 days, by country and US state"
+        val_min = 10
         y_type = "linear"
         y_tickvals = None
     elif val == "deaths_pc":
         text_per = "percent change"
-        val_min = 1
         title = "Average daily percent change of deaths in last 7 days, by country and US state"
+        val_min = 1
         y_type = "linear"
         y_tickvals = None
     else:
         raise ValueError("Invalid val")
 
     out = {
-        "val_min": val_min,
         "text_per": text_per,
         "title": title,
+        "val_min": val_min,
         "y_type": y_type,
         "y_tickvals": y_tickvals,
     }
@@ -222,18 +227,26 @@ def _get_params_plot(val):
 
 def _get_params_map(val):
     if val == "cases_pm":
+        colorbar_ticktext = 10 ** np.arange(7)
+        colorbar_tickvals = np.arange(7)
         text_per = "per million"
         title = "Cases per million people, by country and US state"
         z_range = [1, 5]
     elif val == "deaths_pm":
+        colorbar_ticktext = 10 ** np.arange(7)
+        colorbar_tickvals = np.arange(7)
         text_per = "per million"
         title = "Deaths per million people, by country and US state"
         z_range = [0, 3]
     elif val == "cases_pc":
+        colorbar_ticktext = None
+        colorbar_tickvals = None
         text_per = "percent change"
         title = "Average daily percent change of cases in last 7 days, by country and US state"
         z_range = [0, 30]
     elif val == "deaths_pc":
+        colorbar_ticktext = None
+        colorbar_tickvals = None
         text_per = "percent change"
         title = "Average daily percent change of deaths in last 7 days, by country and US state"
         z_range = [0, 30]
@@ -241,6 +254,8 @@ def _get_params_map(val):
         raise ValueError("Invalid val")
 
     out = {
+        "colorbar_ticktext": colorbar_ticktext,
+        "colorbar_tickvals": colorbar_tickvals,
         "text_per": text_per,
         "title": title,
         "z_range": z_range,

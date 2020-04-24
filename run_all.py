@@ -55,14 +55,14 @@ offline.plot(data, filename=file_plot_deaths_changes, auto_open=False)
 
 # Map -----
 
-data = map_by_date(obs, val="cases_pm")
+data = cv.map_by_date(obs, val="cases_pm")
 offline.plot(data, filename=file_map_cases, auto_open=False)
 
-data = map_by_date(obs, val="deaths_pm")
+data = cv.map_by_date(obs, val="deaths_pm")
 offline.plot(data, filename=file_map_deaths, auto_open=False)
 
-data = map_by_date(obs, val="cases_pc")
+data = cv.map_by_date(obs, val="cases_pc")
 offline.plot(data, filename=file_map_cases_changes, auto_open=False)
 
-data = map_by_date(obs, val="deaths_pc")
+data = cv.map_by_date(obs, val="deaths_pc")
 offline.plot(data, filename=file_map_deaths_changes, auto_open=False)
