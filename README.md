@@ -4,9 +4,8 @@ Coronavirus data and analysis.
 
 ## Required packages
 
-- matplotlib
 - numpy
-- pandas + lxml
+- pandas
 - plotly
 - requests
 - statsmodels
@@ -19,4 +18,3 @@ Coronavirus data and analysis.
 
 - https://github.com/COVID19Tracking
 - https://github.com/CSSEGISandData/COVID-19
-- https://goodjudgment.io/covid/dashboard/

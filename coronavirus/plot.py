@@ -1,185 +1,123 @@
 # Plotting and mapping
 
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from coronavirus.forecast import forecast
-from coronavirus.utils import ffill
 
+def plot_trend(df, val="cases_pm"):
+    """Plot trend"""
+    params = _get_params_plot(val)
+    val_min = params["val_min"]
+    text_per = params["text_per"]
+    title = params["title"]
+    y_type = params["y_type"]
+    y_tickvals = params["y_tickvals"]
 
-def plot_forecast(df, geo="country_name", vals=["cases"], h=1, y_range=[-8, 0]):
-    """Plot observed and forecasted by geo and val"""
-    n_rows = 3
-    n_cols = 5
-    n_plots = n_rows * n_cols
-    val_min_cases = 100
+    if val in ["cases_pm", "deaths_pm"]:
+        df = df[df[val] >= val_min].copy()
+    elif val == "cases_pc":
+        df = df[df["cases_pm"] >= val_min].copy()
+    elif val == "deaths_pc":
+        df = df[df["deaths_pm"] >= val_min].copy()
 
-    top = df[df["date"] == df["date"].max()]
-    top = top[top["cases"].rank(method="first", ascending=False) <= n_plots]
-    top = sorted(top[geo].tolist())
-
-    colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
-    fig, ax = plt.subplots(n_rows, n_cols, sharex="all", sharey="all", figsize=(14, 7))
-
-    for i, plot in enumerate(top):
-        row = np.floor(i / n_cols).astype(int)
-        col = i - row * n_cols
-        df1 = df[(df[geo] == plot) & (df["cases"] >= val_min_cases)]
-
-        for j, val in enumerate(vals):
-            if val == "cases":
-                val_min = val_min_cases
-            else:
-                val_min = 10
-
-            obs = df1[val].to_numpy().astype(float)
-            obs[obs < val_min] = np.nan
-            obs_filled = ffill(obs)
-            obs_filled = obs_filled[~np.isnan(obs_filled)]
-            pred = forecast(obs_filled, h, log=False, trend="mul", damped=True)
-
-            obs_len = len(obs)
-            x_obs = np.arange(obs_len)
-            x_pred = np.arange(obs_len, obs_len + h)
-
-            pop = df1["pop"].to_numpy()[0]
-            obs = obs / pop
-            pred = pred / pop
-
-            color = colors[j]
-            ax[row, col].plot(x_obs, obs, color=color, label=val)
-            ax[row, col].plot(x_pred, pred, color=color, linestyle="--")
-
-        ax[row, col].grid()
-        ax[row, col].set_title(plot)
-        ax[row, col].set_yscale("log")
-        ax[row, col].set_xlim(-5, 95)
-        ax[row, col].set_ylim(10 ** y_range[0], 10 ** y_range[1])
-        ax[row, col].set_xticks([0, 30, 60, 90])
-        ax[row, col].set_yticks(10.0 ** np.arange(-6, 1))
-
-    handles, labels = ax[n_rows - 1, n_cols - 1].get_legend_handles_labels()
-    fig.legend(handles, labels, loc="upper right")
-    return fig
-
-
-def map_by_date(country, state, val="cases", z_range=[-6, 0]):
-    """Return dict to make Plotly map of val per person by country/state and date"""
-    country = country[(country[val] > 0) & (country["country_code"] != "USA")].copy()
-    state = state[state[val] > 0].copy()
-    dates_country = country["date"].unique()
-    dates_state = state["date"].unique()
-    dates = np.sort(dates_country[np.in1d(dates_country, dates_state)])
+    top = df[df["date"] == df["date"].max()].sort_values("pop", ascending=False)
+    top = top["code"].tolist()
     data = []
 
-    for date in dates:
-        country1 = country[country["date"] == date]
-        state1 = state[state["date"] == date]
-        rate_country = country1[val].to_numpy() / country1["pop"].to_numpy()
-        rate_state = state1[val].to_numpy() / state1["pop"].to_numpy()
-        z_country = np.log10(rate_country)
-        z_state = np.log10(rate_state)
-        name_country = country1["country_name"].tolist()
-        name_state = state1["state_name"].tolist()
-        disp_country = np.round(rate_country * 10 ** 6, 1)
-        disp_state = np.round(rate_state * 10 ** 6, 1)
-        text_country = [
-            f"{n}: {v:,.1f} per million" for n, v in zip(name_country, disp_country)
-        ]
-        text_state = [
-            f"{n}: {v:,.1f} per million" for n, v in zip(name_state, disp_state)
-        ]
+    for i, code in enumerate(top):
+        df1 = df[df["code"] == code]
+        name = df1["name"].to_numpy()[0]
+        x = np.arange(len(df1["date"]))
+        y = df1[val].to_numpy()
+        text = np.array(
+            [f"{name} - day {d}: {v:,.1f} {text_per}" for d, v in zip(x, y)]
+        )
+        color = "#1f77b4"
 
         data1 = {
-            "type": "choropleth",
-            "locations": country1["country_code"],
-            "locationmode": "ISO-3",
-            "z": z_country,
-            "zmin": z_range[0],
-            "zmax": z_range[1],
-            "text": text_country,
+            "type": "scatter",
+            "mode": "lines",
+            "x": x,
+            "y": y,
+            "name": name,
+            "text": text,
             "hoverinfo": "text",
-            "colorscale": "Reds",
-            "colorbar_title": "log10(" + val + ")",
+            "opacity": 0.2,
+            "showlegend": False,
+            "line": {"color": color},
         }
         data2 = {
-            "type": "choropleth",
-            "locations": state1["state_code"],
-            "locationmode": "USA-states",
-            "z": z_state,
-            "zmin": z_range[0],
-            "zmax": z_range[1],
-            "text": text_state,
-            "hoverinfo": "text",
-            "colorscale": "Reds",
-            "colorbar_title": "log10(" + val + ")",
+            "type": "scatter",
+            "mode": "markers+text",
+            "x": [x[-1]],
+            "y": [y[-1]],
+            "name": name,
+            "text": name,
+            "textposition": "middle right",
+            "showlegend": False,
+            "hoverinfo": "skip",
+            "marker": {"color": color},
+            "textfont": {"color": color},
         }
         data.append(data1)
         data.append(data2)
 
-    data_len = len(data)
-    steps_len = len(dates)
-    steps = []
-
-    for i in range(steps_len):
-        step = {
-            "method": "restyle",
-            "args": ["visible", [False] * data_len],
-            "label": np.datetime_as_string(dates[i], unit="D"),
-        }
-        step["args"][1][i * 2] = True
-        step["args"][1][i * 2 + 1] = True
-        steps.append(step)
-
-    sliders = [{"active": steps_len - 1, "pad": {"t": 25}, "steps": steps}]
-
-    geo = {
-        "countrywidth": 0.5,
-        "subunitwidth": 0.5,
-        "landcolor": "#888",
-        "projection": {"type": "natural earth"},
-        "showcountries": True,
-        "showsubunits": True,
-        "showlakes": False,
-    }
     layout = {
-        "geo": geo,
-        "sliders": sliders,
+        "title": title,
+        "width": 1200,
+        "height": 800,
         "margin": {"l": 50, "r": 50, "t": 50, "b": 50},
+        "xaxis": {"gridcolor": "#ddd", "zeroline": False},
+        "yaxis": {
+            "gridcolor": "#ddd",
+            "zeroline": False,
+            "type": y_type,
+            "tickvals": y_tickvals,
+        },
+        "paper_bgcolor": "#fff",
+        "plot_bgcolor": "#fff",
     }
     fig = {"data": data, "layout": layout}
     return fig
 
 
-def map_by_date_changes(df, val="cases_chg", z_range=[0, 30]):
-    """Return dict to make Plotly map of average daily changes of val by country/state and date"""
-    df = df.copy()
-    df[val] = df[val] * 100
+def map_by_date(df, val="cases_pm"):
+    """Map by country/state and date"""
+    params = _get_params_map(val)
+    text_per = params["text_per"]
+    title = params["title"]
+    z_range = params["z_range"]
+
     ind_states = df["code"].str.len() == 2
     country = df[~ind_states & (df["code"] != "USA")].copy()
     state = df[ind_states].copy()
     dates_country = country["date"].unique()
     dates_state = state["date"].unique()
     dates = np.sort(dates_country[np.in1d(dates_country, dates_state)])
-    dates = dates[7:]  # TODO: Temporary
     data = []
 
     for date in dates:
         country1 = country[country["date"] == date]
         state1 = state[state["date"] == date]
+        name_country = country1["name"].tolist()
+        name_state = state1["name"].tolist()
 
-        z_country = country1[val].to_numpy()
-        z_state = state1[val].to_numpy()
-        name_country = country1["geo"].tolist()
-        name_state = state1["geo"].tolist()
-        disp_country = np.round(z_country, 1)
-        disp_state = np.round(z_state, 1)
+        if val in ["cases_pm", "deaths_pm"]:
+            z_country = np.log10(country1[val].to_numpy())
+            z_state = np.log10(state1[val].to_numpy())
+            disp_country = np.round(10 ** z_country, 1)
+            disp_state = np.round(10 ** z_state, 1)
+        elif val in ["cases_pc", "deaths_pc"]:
+            z_country = country1[val].to_numpy()
+            z_state = state1[val].to_numpy()
+            disp_country = np.round(z_country, 1)
+            disp_state = np.round(z_state, 1)
+
         text_country = [
-            f"{n}: {v:,.1f}% daily change" for n, v in zip(name_country, disp_country)
+            f"{n}: {v:,.1f} {text_per}" for n, v in zip(name_country, disp_country)
         ]
         text_state = [
-            f"{n}: {v:,.1f}% daily change" for n, v in zip(name_state, disp_state)
+            f"{n}: {v:,.1f} {text_per}" for n, v in zip(name_state, disp_state)
         ]
 
         data1 = {
@@ -192,7 +130,7 @@ def map_by_date_changes(df, val="cases_chg", z_range=[0, 30]):
             "text": text_country,
             "hoverinfo": "text",
             "colorscale": "Reds",
-            "colorbar_title": "Percent",
+            "colorbar_title": "TODO",
         }
         data2 = {
             "type": "choropleth",
@@ -204,7 +142,7 @@ def map_by_date_changes(df, val="cases_chg", z_range=[0, 30]):
             "text": text_state,
             "hoverinfo": "text",
             "colorscale": "Reds",
-            "colorbar_title": "Percent",
+            "colorbar_title": "TODO",
         }
         data.append(data1)
         data.append(data2)
@@ -235,9 +173,76 @@ def map_by_date_changes(df, val="cases_chg", z_range=[0, 30]):
         "showlakes": False,
     }
     layout = {
+        "title": title,
         "geo": geo,
         "sliders": sliders,
         "margin": {"l": 50, "r": 50, "t": 50, "b": 50},
     }
     fig = {"data": data, "layout": layout}
     return fig
+
+
+def _get_params_plot(val):
+    if val == "cases_pm":
+        text_per = "per million"
+        val_min = 10
+        title = "Cases per million people, by country and US state"
+        y_type = "log"
+        y_tickvals = 10 ** np.arange(7)
+    elif val == "deaths_pm":
+        text_per = "per million"
+        val_min = 1
+        title = "Deaths per million people, by country and US state"
+        y_type = "log"
+        y_tickvals = 10 ** np.arange(7)
+    elif val == "cases_pc":
+        text_per = "percent change"
+        val_min = 10
+        title = "Average daily percent change of cases in last 7 days, by country and US state"
+        y_type = "linear"
+        y_tickvals = None
+    elif val == "deaths_pc":
+        text_per = "percent change"
+        val_min = 1
+        title = "Average daily percent change of deaths in last 7 days, by country and US state"
+        y_type = "linear"
+        y_tickvals = None
+    else:
+        raise ValueError("Invalid val")
+
+    out = {
+        "val_min": val_min,
+        "text_per": text_per,
+        "title": title,
+        "y_type": y_type,
+        "y_tickvals": y_tickvals,
+    }
+    return out
+
+
+def _get_params_map(val):
+    if val == "cases_pm":
+        text_per = "per million"
+        title = "Cases per million people, by country and US state"
+        z_range = [1, 5]
+    elif val == "deaths_pm":
+        text_per = "per million"
+        title = "Deaths per million people, by country and US state"
+        z_range = [0, 3]
+    elif val == "cases_pc":
+        text_per = "percent change"
+        title = "Average daily percent change of cases in last 7 days, by country and US state"
+        z_range = [0, 30]
+    elif val == "deaths_pc":
+        text_per = "percent change"
+        title = "Average daily percent change of deaths in last 7 days, by country and US state"
+        z_range = [0, 30]
+    else:
+        raise ValueError("Invalid val")
+
+    out = {
+        "text_per": text_per,
+        "title": title,
+        "z_range": z_range,
+    }
+    return out
