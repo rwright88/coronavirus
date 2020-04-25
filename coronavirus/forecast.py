@@ -9,20 +9,19 @@ from coronavirus.utils import ffill
 
 def forecast_all(df, h=1):
     """Forecast for each code in df"""
-    # TODO: Forecasting assumptions with missing values, starting point, etc
-    # TODO: Subset when pop is missing?
     df = df[~df["pop"].isna()]
     df = df.sort_values(["code", "date"])
-    codes = df["code"].unique()
     cols = ["cases", "deaths"]
     out = []
+    ind = df.groupby("code").indices
 
-    for code in codes:
-        df1 = df[df["code"] == code].copy()
+    for k, v in ind.items():
+        df1 = df.iloc[v].copy()
+        code = df1["code"].to_numpy()[0]
+        name = df1["name"].to_numpy()[0]
+        pop = df1["pop"].to_numpy()[0]
 
         for col in cols:
-            name = df1["name"].to_numpy()[0]
-            pop = df1["pop"].to_numpy()[0]
             val_min = _get_val_min(col, pop)
             dates = pd.date_range(
                 df1["date"].min(), df1["date"].max() + pd.Timedelta(h, "D")
