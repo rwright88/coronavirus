@@ -65,7 +65,7 @@ def _forecast(y, h):
     log = True
     trend = "add"
     damped = True
-    smoothing_level = None
+    smoothing_level = 0.9
     damping_slope = None
 
     y = np.asarray(y)

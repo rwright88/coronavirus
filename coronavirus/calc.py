@@ -8,19 +8,26 @@ def calc_stats(df, n=7):
     """Calculate per million and average daily percent change"""
     df = df.sort_values(["code", "date"])
     cols = ["cases", "deaths"]
-    out = []
-    ind = df.groupby("code").indices
 
     for col in cols:
         df[col + "_pm"] = df[col] / df["pop"] * 1e06
 
+    out = []
+    ind = df.groupby("code").indices
+
     for k, v in ind.items():
         df1 = df.iloc[v].copy()
         for col in cols:
+            df1[col + "_ch"] = calc_change(df1[col + "_pm"], n=n)
             df1[col + "_pc"] = calc_percent_change(df1[col], n=n)
         out.append(df1)
 
     out = pd.concat(out, ignore_index=True)
+    return out
+
+
+def calc_change(x, n=7):
+    out = (x - x.shift(n)) / n
     return out
 
 
