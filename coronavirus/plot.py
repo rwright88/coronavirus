@@ -237,7 +237,7 @@ def _get_params_map(val):
         colorbar_tickvals = np.arange(7)
         text_per = "per million"
         title = "Deaths per million people, by country and US state"
-        z_range = [0, 3]
+        z_range = [0, 4]
     elif val == "cases_pc":
         colorbar_ticktext = None
         colorbar_tickvals = None
