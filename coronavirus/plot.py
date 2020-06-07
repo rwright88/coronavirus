@@ -15,9 +15,9 @@ def plot_trend(df, val="cases_pm"):
 
     if val in ["cases_pm", "deaths_pm"]:
         df = df[df[val] >= val_min].copy()
-    elif val == "cases_pc":
+    elif val in ["cases_ch", "cases_pc"]:
         df = df[df["cases_pm"] >= val_min].copy()
-    elif val == "deaths_pc":
+    elif val in ["deaths_ch", "deaths_pc"]:
         df = df[df["deaths_pm"] >= val_min].copy()
 
     top = df[df["date"] == df["date"].max()].sort_values("pop", ascending=False)
@@ -104,7 +104,7 @@ def map_by_date(df, val="cases_pm"):
         name_country = country1["name"].tolist()
         name_state = state1["name"].tolist()
 
-        if val in ["cases_pm", "deaths_pm"]:
+        if val in ["cases_pm", "deaths_pm", "cases_ch", "deaths_ch"]:
             z_country = np.log10(country1[val].to_numpy())
             z_state = np.log10(state1[val].to_numpy())
             disp_country = np.round(10 ** z_country, 1)
@@ -200,6 +200,18 @@ def _get_params_plot(val):
         val_min = 1
         y_type = "log"
         y_tickvals = 10 ** np.arange(7)
+    elif val == "cases_ch":
+        text_per = "change per million"
+        title = "Average daily change of cases per million in last 7 days, by country and US state"
+        val_min = 10
+        y_type = "log"
+        y_tickvals = None
+    elif val == "deaths_ch":
+        text_per = "change per million"
+        title = "Average daily change of deaths per million in last 7 days, by country and US state"
+        val_min = 1
+        y_type = "log"
+        y_tickvals = None
     elif val == "cases_pc":
         text_per = "percent change"
         title = "Average daily percent change of cases in last 7 days, by country and US state"
@@ -238,6 +250,18 @@ def _get_params_map(val):
         text_per = "per million"
         title = "Deaths per million people, by country and US state"
         z_range = [0, 4]
+    elif val == "cases_ch":
+        colorbar_ticktext = 10.0 ** np.arange(-1, 7)
+        colorbar_tickvals = np.arange(-1, 7)
+        text_per = "change per million"
+        title = "Average daily change of cases per million in last 7 days, by country and US state"
+        z_range = [0, 3]
+    elif val == "deaths_ch":
+        colorbar_ticktext = 10.0 ** np.arange(-1, 7)
+        colorbar_tickvals = np.arange(-1, 7)
+        text_per = "change per million"
+        title = "Average daily change of deaths per million in last 7 days, by country and US state"
+        z_range = [-1, 2]
     elif val == "cases_pc":
         colorbar_ticktext = None
         colorbar_tickvals = None

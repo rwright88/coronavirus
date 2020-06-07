@@ -51,10 +51,10 @@ offline.plot(data, filename=out_plot_cases, auto_open=False)
 data = cv.plot_trend(obs_plot, val="deaths_pm")
 offline.plot(data, filename=out_plot_deaths, auto_open=False)
 
-data = cv.plot_trend(obs_plot, val="cases_pc")
+data = cv.plot_trend(obs_plot, val="cases_ch")
 offline.plot(data, filename=out_plot_cases_changes, auto_open=False)
 
-data = cv.plot_trend(obs_plot, val="deaths_pc")
+data = cv.plot_trend(obs_plot, val="deaths_ch")
 offline.plot(data, filename=out_plot_deaths_changes, auto_open=False)
 
 # TODO
@@ -72,8 +72,8 @@ offline.plot(data, filename=out_map_cases, auto_open=False)
 data = cv.map_by_date(obs, val="deaths_pm")
 offline.plot(data, filename=out_map_deaths, auto_open=False)
 
-data = cv.map_by_date(obs, val="cases_pc")
+data = cv.map_by_date(obs, val="cases_ch")
 offline.plot(data, filename=out_map_cases_changes, auto_open=False)
 
-data = cv.map_by_date(obs, val="deaths_pc")
+data = cv.map_by_date(obs, val="deaths_ch")
 offline.plot(data, filename=out_map_deaths_changes, auto_open=False)
