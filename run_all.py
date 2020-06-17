@@ -57,23 +57,18 @@ offline.plot(data, filename=out_plot_cases_changes, auto_open=False)
 data = cv.plot_trend(obs_plot, val="deaths_ch")
 offline.plot(data, filename=out_plot_deaths_changes, auto_open=False)
 
-# TODO
-obs_state = obs[[len(x) == 2 for x in obs["code"]]]
-data = cv.plot_trend(obs_state, val="cases_pm")
-offline.plot(data, filename="out/coronavirus-plot-cases-state.html", auto_open=False)
-data = cv.plot_trend(obs_state, val="deaths_pm")
-offline.plot(data, filename="out/coronavirus-plot-deaths-state.html", auto_open=False)
-
 # Map -----
 
-data = cv.map_by_date(obs, val="cases_pm")
+obs_map = obs[obs["date"] >= "2020-03-01"]
+
+data = cv.map_by_date(obs_map, val="cases_pm")
 offline.plot(data, filename=out_map_cases, auto_open=False)
 
-data = cv.map_by_date(obs, val="deaths_pm")
+data = cv.map_by_date(obs_map, val="deaths_pm")
 offline.plot(data, filename=out_map_deaths, auto_open=False)
 
-data = cv.map_by_date(obs, val="cases_ch")
+data = cv.map_by_date(obs_map, val="cases_ch")
 offline.plot(data, filename=out_map_cases_changes, auto_open=False)
 
-data = cv.map_by_date(obs, val="deaths_ch")
+data = cv.map_by_date(obs_map, val="deaths_ch")
 offline.plot(data, filename=out_map_deaths_changes, auto_open=False)
