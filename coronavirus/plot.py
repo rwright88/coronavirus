@@ -243,25 +243,25 @@ def _get_params_map(val):
         colorbar_tickvals = np.arange(7)
         text_per = "per million"
         title = "Cases per million people, by country and US state"
-        z_range = [1, 5]
+        z_range = [1, 4.5]
     elif val == "deaths_pm":
         colorbar_ticktext = 10 ** np.arange(7)
         colorbar_tickvals = np.arange(7)
         text_per = "per million"
         title = "Deaths per million people, by country and US state"
-        z_range = [0, 4]
+        z_range = [0, 3.5]
     elif val == "cases_ch":
         colorbar_ticktext = 10.0 ** np.arange(-1, 7)
         colorbar_tickvals = np.arange(-1, 7)
         text_per = "change per million"
         title = "Average daily change of cases per million in last 7 days, by country and US state"
-        z_range = [0, 3]
+        z_range = [0, 2.5]
     elif val == "deaths_ch":
         colorbar_ticktext = 10.0 ** np.arange(-1, 7)
         colorbar_tickvals = np.arange(-1, 7)
         text_per = "change per million"
         title = "Average daily change of deaths per million in last 7 days, by country and US state"
-        z_range = [-1, 2]
+        z_range = [-1, 1.5]
     elif val == "cases_pc":
         colorbar_ticktext = None
         colorbar_tickvals = None
