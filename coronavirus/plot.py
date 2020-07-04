@@ -28,6 +28,7 @@ def plot_trend(df, val="cases_pm"):
         df1 = df[df["code"] == code]
         name = df1["name"].to_numpy()[0]
         x = np.arange(len(df1["date"]))
+        x = x - np.max(x)
         y = df1[val].to_numpy()
         text = np.array(
             [f"{name} - day {d}: {v:,.1f} {text_per}" for d, v in zip(x, y)]
@@ -204,13 +205,13 @@ def _get_params_plot(val):
         text_per = "change per million"
         title = "Average daily change of cases per million in last 7 days, by country and US state"
         val_min = 10
-        y_type = "log"
+        y_type = "linear"
         y_tickvals = None
     elif val == "deaths_ch":
         text_per = "change per million"
         title = "Average daily change of deaths per million in last 7 days, by country and US state"
         val_min = 1
-        y_type = "log"
+        y_type = "linear"
         y_tickvals = None
     elif val == "cases_pc":
         text_per = "percent change"
